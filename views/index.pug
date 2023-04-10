@@ -1,0 +1,69 @@
+extends layout
+
+block content
+  h1= title
+
+  if status.isAuth
+    form(method='POST' action='')
+      div.mb-3
+        input#password.form-control(type='text' placeholder='Enter text of your post here' name='post' required='true' value='')
+
+      button.btn.btn-primary(type='submit') Send
+
+  if errors
+    ul(style='margin-top: 1rem; color: red')
+      for error in errors
+        li!= error.message || error.msg
+
+  for post in posts
+    div(style='padding: 5px')
+      hr
+
+      if status.isMember
+        p #{post.author.username || ''}     #{post.date_formatted || ''}
+      p= post.text
+
+      if status.isAdmin
+        button.btn.btn-outline-primary.btn-sm(href='' id=post._id onclick='handleDeleteClick(this); return false;') Delete 
+
+  script.
+    const handleDeleteClick = (element) => {
+      element.style.display = 'none';
+      const parent = element.parentNode;
+      const id = element.id;
+
+      const form = document.createElement('form');
+      form.setAttribute('method', 'post');
+      form.setAttribute('action', '/delete-post');
+
+      const input = document.createElement('input');
+      input.setAttribute('type', 'hidden');
+      input.setAttribute('value', element.id);
+      input.setAttribute('name', 'postId');
+
+      const sure = document.createElement('label');
+      sure.textContent = 'Sure?';
+
+      const yes = document.createElement('button');
+      yes.textContent = 'Yes';
+      yes.setAttribute('style', 'margin-left: 10px');
+      yes.setAttribute('class', 'btn btn-sm btn-outline-success');
+      yes.setAttribute('type', 'submit');
+
+      const no = document.createElement('button');
+      no.textContent = 'No';
+      no.setAttribute('style', 'margin-left: 10px');
+      no.setAttribute('class', 'btn btn-sm btn-outline-danger');
+      no.setAttribute('onclick', 'cancelForm(this); return false;');
+
+      form.append(sure, input, no, yes);
+      parent.append(form);
+    }
+
+    const cancelForm = (element) => {
+      const form = element.parentNode;
+      const deleteButton = element.parentNode.previousElementSibling;
+
+      form.remove();
+      deleteButton.style.display = 'inline-block';
+    }
